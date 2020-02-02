@@ -107,6 +107,7 @@ static int sam_psy_get_sta(u8 iid, u32 *sta)
 {
 	struct surface_sam_ssh_rqst rqst;
 	struct surface_sam_ssh_buf result;
+	printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
 
 	rqst.tc  = SAM_PWR_TC;
 	rqst.cid = SAM_RQST_PWR_CID_STA;
@@ -953,6 +954,7 @@ static int spwr_ac_register(struct spwr_ac_device *ac, struct platform_device *p
 	struct power_supply_config psy_cfg = {};
 	u32 sta;
 	int status;
+	printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
 
 	// make sure the device is there and functioning properly
 	status = sam_psy_get_sta(0x00, &sta);
@@ -1006,6 +1008,7 @@ err:
 static int spwr_ac_unregister(struct spwr_ac_device *ac)
 {
 	int status;
+	printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
 
 	mutex_lock(&spwr_subsystem.lock);
 	if (spwr_subsystem.ac != ac) {
@@ -1029,6 +1032,7 @@ static int spwr_battery_register(struct spwr_battery_device *bat, struct platfor
 	struct power_supply_config psy_cfg = {};
 	u32 sta;
 	int status;
+	printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
 
 	if ((id < 0 || id >= __SPWR_NUM_BAT) && id != SPWR_BAT_SINGLE)
 		return -EINVAL;
@@ -1038,6 +1042,7 @@ static int spwr_battery_register(struct spwr_battery_device *bat, struct platfor
 
 	// make sure the device is there and functioning properly
 	status = sam_psy_get_sta(bat->id + 1, &sta);
+	printk(KERN_ALERT "DEBUG: issue53 status %d sta %d",status,sta);
 	if (status)
 		return status;
 
@@ -1109,6 +1114,7 @@ err:
 static int spwr_battery_unregister(struct spwr_battery_device *bat)
 {
 	int status;
+	printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
 
 	if (bat->id < 0 || bat->id >= __SPWR_NUM_BAT)
 		return -EINVAL ;
@@ -1153,17 +1159,27 @@ static int surface_sam_sid_battery_probe(struct platform_device *pdev)
 {
 	int status;
 	struct spwr_battery_device *bat;
+	printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
 
 	// link to ec
 	status = surface_sam_ssh_consumer_register(&pdev->dev);
-	if (status)
+	printk(KERN_ALERT "DEBUG: Passed %s %d status %d \n",__FUNCTION__,__LINE__, status);
+	if (status) {
+		printk(KERN_ALERT "DEBUG: Passed %s %d\n",__FUNCTION__,__LINE__);
 		return status == -ENXIO ? -EPROBE_DEFER : status;
+	}
+	printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
 
 	bat = devm_kzalloc(&pdev->dev, sizeof(struct spwr_battery_device), GFP_KERNEL);
-	if (!bat)
+	printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
+	if (!bat) {
+		printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
 		return -ENOMEM;
+	}
+	printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
 
 	platform_set_drvdata(pdev, bat);
+	printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
 	return spwr_battery_register(bat, pdev, pdev->id);
 }
 
@@ -1192,6 +1208,7 @@ static int surface_sam_sid_ac_probe(struct platform_device *pdev)
 {
 	int status;
 	struct spwr_ac_device *ac;
+	printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
 
 	// link to ec
 	status = surface_sam_ssh_consumer_register(&pdev->dev);

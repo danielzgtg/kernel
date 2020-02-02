@@ -255,11 +255,15 @@ int surface_sam_ssh_consumer_register(struct device *consumer)
 	u32 flags = DL_FLAG_PM_RUNTIME | DL_FLAG_AUTOREMOVE_CONSUMER;
 	struct sam_ssh_ec *ec;
 	struct device_link *link;
+	printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
 
 	ec = surface_sam_ssh_acquire_init();
+	printk(KERN_ALERT "DEBUG: Passed %s %d ec %d \n",__FUNCTION__,__LINE__,!ec);
 	if (!ec) {
+		printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
 		return -ENXIO;
 	}
+	printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
 
 	link = device_link_add(consumer, &ec->serdev->dev, flags);
 	if (!link) {
@@ -1513,11 +1517,15 @@ static int surface_sam_ssh_probe(struct serdev_device *serdev)
 	int irq;
 
 	dev_dbg(&serdev->dev, "probing\n");
+	printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
 
-	if (gpiod_count(&serdev->dev, NULL) < 0)
+	if (gpiod_count(&serdev->dev, NULL) < 0) {
+		printk(KERN_ALERT "DEBUG: Err at %s %d \n",__FUNCTION__,__LINE__);
 		return -ENODEV;
+	}
 
 	status = devm_acpi_dev_add_driver_gpios(&serdev->dev, surface_sam_acpi_gpios);
+	printk(KERN_ALERT "DEBUG: Passed %s %d gpiostatus %d \n",__FUNCTION__,__LINE__, status);
 	if (status)
 		return status;
 
@@ -1525,36 +1533,42 @@ static int surface_sam_ssh_probe(struct serdev_device *serdev)
 	write_buf = kzalloc(SSH_WRITE_BUF_LEN, GFP_KERNEL);
 	if (!write_buf) {
 		status = -ENOMEM;
+		printk(KERN_ALERT "DEBUG: Err at %s %d \n",__FUNCTION__,__LINE__);
 		goto err_write_buf;
 	}
 
 	read_buf = kzalloc(SSH_READ_BUF_LEN, GFP_KERNEL);
 	if (!read_buf) {
 		status = -ENOMEM;
+		printk(KERN_ALERT "DEBUG: Err at %s %d \n",__FUNCTION__,__LINE__);
 		goto err_read_buf;
 	}
 
 	eval_buf = kzalloc(SSH_EVAL_BUF_LEN, GFP_KERNEL);
 	if (!eval_buf) {
 		status = -ENOMEM;
+		printk(KERN_ALERT "DEBUG: Err at %s %d \n",__FUNCTION__,__LINE__);
 		goto err_eval_buf;
 	}
 
 	event_queue_ack = create_singlethread_workqueue("surface_sh_ackq");
 	if (!event_queue_ack) {
 		status = -ENOMEM;
+		printk(KERN_ALERT "DEBUG: Err at %s %d \n",__FUNCTION__,__LINE__);
 		goto err_ackq;
 	}
 
 	event_queue_evt = create_workqueue("surface_sh_evtq");
 	if (!event_queue_evt) {
 		status = -ENOMEM;
+		printk(KERN_ALERT "DEBUG: Err at %s %d \n",__FUNCTION__,__LINE__);
 		goto err_evtq;
 	}
 
 	irq = surface_sam_setup_irq(serdev);
 	if (irq < 0) {
 		status = irq;
+		printk(KERN_ALERT "DEBUG: Err at %s %d \n",__FUNCTION__,__LINE__);
 		goto err_irq;
 	}
 
@@ -1565,6 +1579,7 @@ static int surface_sam_ssh_probe(struct serdev_device *serdev)
 		surface_sam_ssh_release(ec);
 
 		status = -EBUSY;
+		printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
 		goto err_busy;
 	}
 
@@ -1585,6 +1600,7 @@ static int surface_sam_ssh_probe(struct serdev_device *serdev)
 	ec->events.queue_evt = event_queue_evt;
 
 	ec->state = SSH_EC_INITIALIZED;
+	printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
 
 	serdev_device_set_drvdata(serdev, ec);
 
@@ -1594,22 +1610,26 @@ static int surface_sam_ssh_probe(struct serdev_device *serdev)
 	serdev_device_set_client_ops(serdev, &ssh_device_ops);
 	status = serdev_device_open(serdev);
 	if (status) {
+		printk(KERN_ALERT "DEBUG: Err at %s %d \n",__FUNCTION__,__LINE__);
 		goto err_open;
 	}
 
 	status = acpi_walk_resources(ssh, METHOD_NAME__CRS,
 	                             ssh_setup_from_resource, serdev);
 	if (ACPI_FAILURE(status)) {
+		printk(KERN_ALERT "DEBUG: Err at %s %d \n",__FUNCTION__,__LINE__);
 		goto err_devinit;
 	}
 
 	status = surface_sam_ssh_ec_resume(ec);
 	if (status) {
+		printk(KERN_ALERT "DEBUG: Err at %s %d \n",__FUNCTION__,__LINE__);
 		goto err_devinit;
 	}
 
 	status = surface_sam_ssh_sysfs_register(&serdev->dev);
 	if (status) {
+		printk(KERN_ALERT "DEBUG: Err at %s %d \n",__FUNCTION__,__LINE__);
 		goto err_devinit;
 	}
 
@@ -1625,6 +1645,7 @@ static int surface_sam_ssh_probe(struct serdev_device *serdev)
 	// power/wakeup to false.
 	device_set_wakeup_capable(&serdev->dev, true);
 	acpi_walk_dep_device_list(ssh);
+	printk(KERN_ALERT "DEBUG: Ok at %s %d \n",__FUNCTION__,__LINE__);
 
 	return 0;
 
@@ -1647,6 +1668,7 @@ err_eval_buf:
 err_read_buf:
 	kfree(write_buf);
 err_write_buf:
+	printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
 	return status;
 }
 
